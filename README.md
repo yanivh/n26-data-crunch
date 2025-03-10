@@ -102,8 +102,8 @@ This project implements a data processing pipeline that generates test data, pro
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone <git@github.com:yanivh/n26-data-crunch.git>
+cd <n26-data-crunch>
 ```
 
 2. Choose your preferred execution method:
