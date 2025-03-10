@@ -6,13 +6,13 @@ WITH daily_counts AS (
     SELECT 
         transaction_id,
         user_id,
-        date,
+        CAST(date AS DATE) as date,
         CAST(
             COALESCE(
                 COUNT(*) OVER (
                     PARTITION BY user_id 
-                    ORDER BY date 
-                    RANGE BETWEEN INTERVAL '7 days' PRECEDING AND INTERVAL '1 day' PRECEDING
+                    ORDER BY CAST(date AS DATE)
+                    ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING
                 ),
                 0
             ) AS INTEGER

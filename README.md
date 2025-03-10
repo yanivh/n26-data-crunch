@@ -3,6 +3,25 @@
 ## Overview
 This repository contains my solution to the N26 Data Engineering Challenge. The challenge consists of three main tasks that test different aspects of data engineering skills: data processing, feature computation, and dimension deduplication.
 
+## Running Tests
+All tests can be run using Docker to ensure consistent environment and avoid Python version issues.
+
+```bash
+# First, build the Docker image (required once)
+make docker-build
+
+# Then run tests for each task:
+
+# Task 1: Join Datasets
+make docker-join-test
+
+# Task 2: Feature Table
+make docker-feature-table
+
+# Task 3: Dimension Deduplication
+make docker-dimension-test
+```
+
 ## Approach & Methodology
 I approached this challenge with a combination of hands-on experience and modern engineering practices. While I initially developed solutions based on my expertise, I also leveraged AI tools (specifically LLM) to validate and enhance my approaches. This reflects my belief that effective engineering involves using all available tools wisely while maintaining critical thinking and code quality.
 
@@ -15,73 +34,43 @@ I approached this challenge with a combination of hands-on experience and modern
 ## Task Breakdown
 
 ### Task 1: Joining Data Sets
-**Initial Implementation:**
-- Created modular Python code structure.
-- Implemented processing logic.
-- Focused on maintainability and single responsibility principle.
+**Description:**
+Joins multiple datasets (transactions, users, and agreements) efficiently while maintaining data integrity.
 
-**Improvements:**
-- Enhanced data generation for more realistic distributions.
-- Improved code organization and documentation
-- Optimized memory usage and performance
-- Create Makefile and docker files for easy setup and execution.
-
-**Run the solution:**
+**Run the tests:**
 ```bash
-make all  # Generates and processes the data sets
+# Build Docker image (required once)
+make docker-build
+
+# Run join datasets tests
+make docker-join-test
 ```
 
 ### Task 2: Feature Table Computation
 **Challenge:**
 Computing a feature table for transactions, calculating the number of transactions within the previous seven days for each user.
 
-**Solution Approach:**
-- Implemented using Window Functions for efficient processing.
-- Carefully considered performance implications.
-- Added support for large dataset handling.
+**Run the tests:**
+```bash
+# Build Docker image (if not already built)
+make docker-build
 
-**Key Implementation Details:**
-```sql
-WITH daily_counts AS (
-    SELECT 
-        transaction_id,
-        user_id,
-        date,
-        COUNT(*) OVER (
-            PARTITION BY user_id 
-            ORDER BY date 
-            RANGE BETWEEN INTERVAL '7 days' PRECEDING AND 
-            INTERVAL '1 day' PRECEDING
-        ) as transactions_last_7_days
-    FROM transactions
-)
+# Run feature table tests
+make docker-feature-table
 ```
-
-**Technical Highlights:**
-- Efficient data partitioning by user
-- Smart window frame management
-- Parallel processing capabilities
-- O(N log N) complexity for optimal performance
 
 ### Task 3: Dimension Deduplication
 **Challenge:**
 Optimize storage and query performance by removing redundant records while maintaining data integrity.
 
-**Solution Evolution:**
-1. Initial Approach (`dimension_deduplication.sql`):
-   - Used window functions for change detection
-   - Implemented basic deduplication logic
+**Run the tests:**
+```bash
+# Build Docker image (if not already built)
+make docker-build
 
-2. Optimized Solution (`dimension_deduplication_optimized.sql`):
-   - Single-pass processing
-   - Minimal memory footprint
-   - More efficient window function usage
-
-**Key Considerations:**
-- Single table scan for performance
-- Minimal memory usage
-- Efficient use of window functions
-- Maintaining data integrity
+# Run dimension deduplication tests
+make docker-dimension-test
+```
 
 # Data Processing Pipeline
 
@@ -132,19 +121,7 @@ make docker-join-test
 make docker-join-run
 ```
 
-### Using Local Python Environment
 
-```bash
-# Create virtual environment and install dependencies
-make setup
-
-# Run the test suite
-make join-test
-
-# Generate data and run main program
-make generate
-python src/join_datasets.py
-```
 
 ## Step-by-Step Testing
 
@@ -240,7 +217,7 @@ The program includes comprehensive error handling for:
 
 ## License
 
-[Add your license information here]
+[n26-data-crunch@yanivh]
 
 
 

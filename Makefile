@@ -118,7 +118,8 @@ docker-dimension-test:
 		echo "Error: Docker is not installed. Please install Docker Desktop from https://www.docker.com/products/docker-desktop/"; \
 		exit 1; \
 	fi
-	docker run --rm -e PYTHONUNBUFFERED=1 $(DOCKER_IMAGE):$(DOCKER_TAG) python src/dimension_deduplication_test.py
+	@echo "Running dimension deduplication tests in Docker..."
+	docker run --rm -v $(PWD):/app/data $(DOCKER_IMAGE):$(DOCKER_TAG) src/dimension_deduplication_test.py
 
 # Add new target
 join-test: setup
@@ -146,4 +147,13 @@ docker-join-test:
 	@rm -f *.csv data/*.csv  # Clean existing data files
 	docker run --rm -v $(PWD):/app/data $(DOCKER_IMAGE):$(DOCKER_TAG) src/main.py
 	@sleep 1  # Give filesystem time to sync
-	docker run --rm -v $(PWD):/app/data $(DOCKER_IMAGE):$(DOCKER_TAG) src/join_datasets_test.py 
+	docker run --rm -v $(PWD):/app/data $(DOCKER_IMAGE):$(DOCKER_TAG) src/join_datasets_test.py
+
+# Add Docker-specific test targets
+docker-feature-table:
+	@if ! command -v docker >/dev/null 2>&1; then \
+		echo "Error: Docker is not installed. Please install Docker Desktop from https://www.docker.com/products/docker-desktop/"; \
+		exit 1; \
+	fi
+	@echo "Running feature table tests in Docker..."
+	docker run --rm -v $(PWD):/app/data $(DOCKER_IMAGE):$(DOCKER_TAG) src/feature_table_test.py 

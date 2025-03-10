@@ -2,33 +2,21 @@
 -- Single-pass solution using efficient window functions
 -- No temporary tables or CTEs needed
 
-WITH change_points AS (
-    SELECT 
-        *,
-        -- Detect changes in any attribute
-        CASE WHEN 
-            LAG(client_id) OVER w != client_id OR
-            LAG(product_id) OVER w != product_id OR
-            LAG(interest_rate) OVER w != interest_rate OR
-            LAG(client_id) OVER w IS NULL
-        THEN 1 ELSE 0 END as is_change
-    FROM dim_dep_agreement
-    WINDOW w AS (PARTITION BY agrmnt_id ORDER BY actual_from_dt)
-),
-valid_periods AS (
+WITH changes AS (
     SELECT 
         sk_agrmnt_id,
         agrmnt_id,
-        actual_from_dt,
-        COALESCE(
-            LEAD(actual_from_dt) OVER (PARTITION BY agrmnt_id ORDER BY actual_from_dt),
-            '9999-12-31'::VARCHAR
-        ) as actual_to_dt,
+        CAST(actual_from_dt AS DATE) as actual_from_dt,
+        CAST(actual_to_dt AS DATE) as actual_to_dt,
         client_id,
         product_id,
-        interest_rate
-    FROM change_points
-    WHERE is_change = 1
+        interest_rate,
+        -- Detect changes by comparing with next record
+        LAG(product_id) OVER (PARTITION BY agrmnt_id ORDER BY CAST(actual_from_dt AS DATE)) as prev_product_id,
+        LAG(interest_rate) OVER (PARTITION BY agrmnt_id ORDER BY CAST(actual_from_dt AS DATE)) as prev_interest_rate,
+        -- Mark first record of each agreement
+        ROW_NUMBER() OVER (PARTITION BY agrmnt_id ORDER BY CAST(actual_from_dt AS DATE)) as rn
+    FROM dim_dep_agreement
 )
 SELECT 
     sk_agrmnt_id,
@@ -38,7 +26,15 @@ SELECT
     client_id,
     product_id,
     interest_rate
-FROM valid_periods
+FROM changes
+WHERE 
+    -- Keep first record of each agreement
+    rn = 1
+    OR 
+    -- Keep records where either product or rate changed
+    product_id != prev_product_id 
+    OR 
+    interest_rate != prev_interest_rate
 ORDER BY agrmnt_id, actual_from_dt;
 
 /*

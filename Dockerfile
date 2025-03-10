@@ -8,7 +8,16 @@ WORKDIR /app
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-# Copy source code
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create necessary directories
+RUN mkdir -p src/queries/feature_table
+
+# Copy all source code and config files
 COPY src/ ./src/
 COPY Makefile .
 

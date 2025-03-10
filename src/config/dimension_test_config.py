@@ -1,17 +1,18 @@
 # Test data for dimension deduplication
 SAMPLE_DATA = [
-    (1, 101, '2015-01-01', '2015-02-20', 20, 305, 3.5),
-    (2, 101, '2015-02-21', '2015-05-17', 20, 345, 4.0),
-    (3, 101, '2015-05-18', '2015-07-05', 20, 345, 4.0),
-    (4, 101, '2015-07-06', '2015-08-22', 20, 539, 6.0),
-    (5, 101, '2015-08-23', '9999-12-31', 20, 345, 4.0),
-    (6, 102, '2016-01-01', '2016-06-30', 25, 333, 3.7),
-    (7, 102, '2016-07-01', '2016-07-25', 25, 333, 3.7),
-    (8, 102, '2016-07-26', '2016-09-15', 25, 333, 3.7),
-    (9, 102, '2016-09-16', '9999-12-31', 25, 560, 5.9),
-    (10, 103, '2011-05-22', '9999-12-31', 30, 560, 2.0),
+    {'sk_agrmnt_id': 1, 'agrmnt_id': 101, 'actual_from_dt': '2015-01-01', 'actual_to_dt': '2015-02-20', 'client_id': 20, 'product_id': 305, 'interest_rate': 3.5},
+    {'sk_agrmnt_id': 2, 'agrmnt_id': 101, 'actual_from_dt': '2015-02-21', 'actual_to_dt': '2015-05-17', 'client_id': 20, 'product_id': 345, 'interest_rate': 4.0},
+    {'sk_agrmnt_id': 3, 'agrmnt_id': 101, 'actual_from_dt': '2015-05-18', 'actual_to_dt': '2015-07-05', 'client_id': 20, 'product_id': 345, 'interest_rate': 4.0},
+    {'sk_agrmnt_id': 4, 'agrmnt_id': 101, 'actual_from_dt': '2015-07-06', 'actual_to_dt': '2015-08-22', 'client_id': 20, 'product_id': 539, 'interest_rate': 6.0},
+    {'sk_agrmnt_id': 5, 'agrmnt_id': 101, 'actual_from_dt': '2015-08-23', 'actual_to_dt': '9999-12-31', 'client_id': 20, 'product_id': 345, 'interest_rate': 4.0},
+    {'sk_agrmnt_id': 6, 'agrmnt_id': 102, 'actual_from_dt': '2016-01-01', 'actual_to_dt': '2016-06-30', 'client_id': 25, 'product_id': 333, 'interest_rate': 3.7},
+    {'sk_agrmnt_id': 7, 'agrmnt_id': 102, 'actual_from_dt': '2016-07-01', 'actual_to_dt': '2016-07-25', 'client_id': 25, 'product_id': 333, 'interest_rate': 3.7},
+    {'sk_agrmnt_id': 8, 'agrmnt_id': 102, 'actual_from_dt': '2016-07-26', 'actual_to_dt': '2016-09-15', 'client_id': 25, 'product_id': 333, 'interest_rate': 3.7},
+    {'sk_agrmnt_id': 9, 'agrmnt_id': 102, 'actual_from_dt': '2016-09-16', 'actual_to_dt': '9999-12-31', 'client_id': 25, 'product_id': 560, 'interest_rate': 5.9},
+    {'sk_agrmnt_id': 10, 'agrmnt_id': 103, 'actual_from_dt': '2011-05-22', 'actual_to_dt': '9999-12-31', 'client_id': 30, 'product_id': 560, 'interest_rate': 2.0}
 ]
 
+# Column definitions
 COLUMNS = [
     'sk_agrmnt_id',
     'agrmnt_id',

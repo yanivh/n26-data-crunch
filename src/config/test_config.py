@@ -11,11 +11,13 @@ USERS = [
 
 # Test data for transactions
 SAMPLE_DATA = [
-    (str(uuid.uuid4()), '2020-01-01', USERS[0][0], False, 100, 1),
-    (str(uuid.uuid4()), '2020-01-05', USERS[0][0], False, 200, 2),
-    (str(uuid.uuid4()), '2020-01-07', USERS[0][0], True,  150, 1),
-    (str(uuid.uuid4()), '2020-01-15', USERS[1][0], False, 300, 3),
-    (str(uuid.uuid4()), '2020-01-16', USERS[2][0], False, 250, 2)
+    {'transaction_id': 'ef05-4247', 'user_id': 'becf-457e', 'date': '2020-01-01'},
+    {'transaction_id': 'c8d1-40ca', 'user_id': 'becf-457e', 'date': '2020-01-05'},
+    {'transaction_id': 'fc2b-4b36', 'user_id': 'becf-457e', 'date': '2020-01-07'},
+    {'transaction_id': '3725-48c4', 'user_id': 'becf-457e', 'date': '2020-01-15'},
+    {'transaction_id': '5f2a-47c2', 'user_id': 'becf-457e', 'date': '2020-01-16'},
+    {'transaction_id': '7541-412c', 'user_id': '5728-4f1c', 'date': '2020-01-01'},
+    {'transaction_id': '3deb-47d7', 'user_id': '5728-4f1c', 'date': '2020-01-12'}
 ]
 
 # Column definitions
@@ -35,4 +37,12 @@ USER_COLUMNS = [
 
 # Query file paths
 MAIN_QUERY_PATH = 'src/queries/feature_table/main.sql'
-ALTERNATIVE_QUERY_PATH = 'src/queries/feature_table/alternative_solutions.sql' 
+ALTERNATIVE_QUERY_PATH = 'src/queries/feature_table/alternative_solutions.sql'
+
+# Expected columns in the feature table
+EXPECTED_COLUMNS = [
+    'transaction_id',
+    'user_id',
+    'date',
+    '# Transactions within previous 7 days'
+] 
