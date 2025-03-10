@@ -3,8 +3,21 @@
 ## Overview
 This repository contains my solution to the N26 Data Engineering Challenge. The challenge consists of three main tasks that test different aspects of data engineering skills: data processing, feature computation, and dimension deduplication.
 
-## Running Tests
-All tests can be run using Docker to ensure consistent environment and avoid Python version issues.
+**Initial Implementation:**
+- Created modular Python code structure.
+- devlope a Initial SQL query for the feature table and dimension deduplication.
+- Implemented processing logic.
+- Focused on maintainability and single responsibility principle.
+- Write README.md file.
+
+**Improvements:**
+- Enhanced data generation for more realistic distributions.
+- Improved code organization and documentation.
+- Optimized Queries and memory usage and performance.
+- Create Makefile and docker files for easy setup and execution.
+- Create Test files for each task.
+- Enhanced  README.md file.
+
 
 ```bash
 # First, build the Docker image (required once)
@@ -30,12 +43,18 @@ I approached this challenge with a combination of hands-on experience and modern
 - SQL for data analysis
 - Git for version control
 - Cursor AI for LLM support
+- Docker for containerized execution
+- Makefile for easy setup and execution
+- DuckDB for database operations
+
 
 ## Task Breakdown
 
 ### Task 1: Joining Data Sets
 **Description:**
 Joins multiple datasets (transactions, users, and agreements) efficiently while maintaining data integrity.
+
+Reviewing this task, I pay special attention not only to the correctness of results, but especially to the code quality and efficiency of the data structures and algorithms used. The implementation uses hash tables for O(1) lookups and minimizes memory usage through generator patterns where applicable.
 
 **Run the tests:**
 ```bash
@@ -50,6 +69,12 @@ make docker-join-test
 **Challenge:**
 Computing a feature table for transactions, calculating the number of transactions within the previous seven days for each user.
 
+Under the hood, when executing this query, the database engine performs several optimization steps:
+1. Query Planning: Creates execution plan using statistics about data distribution
+2. Index Usage: Leverages temporal indexes for efficient date-range filtering
+3. Window Functions: Optimizes sliding window calculations using partitioning
+4. Memory Management: Uses hash aggregation for grouping when memory permits
+
 **Run the tests:**
 ```bash
 # Build Docker image (if not already built)
@@ -63,6 +88,15 @@ make docker-feature-table
 **Challenge:**
 Optimize storage and query performance by removing redundant records while maintaining data integrity.
 
+**Script Logic:**
+The deduplication process follows these key steps:
+1. Identifies duplicate records using a combination of business keys
+2. Maintains version history through effective dating
+3. Implements soft deletes to preserve historical data
+4. Uses window functions to determine the latest valid record
+5. Optimizes storage by removing redundant data while maintaining referential integrity
+6. Implements change tracking through SCD Type 2 methodology
+
 **Run the tests:**
 ```bash
 # Build Docker image (if not already built)
@@ -72,9 +106,6 @@ make docker-build
 make docker-dimension-test
 ```
 
-# Data Processing Pipeline
-
-This project implements a data processing pipeline that generates test data, processes transactions, and joins datasets efficiently using Python's standard library.
 
 ## Prerequisites
 
@@ -88,14 +119,13 @@ This project implements a data processing pipeline that generates test data, pro
 
 ```
 .
-├── data/                  # Generated data files directory
 ├── src/
 │   ├── data_generator.py  # Data generation logic
 │   ├── data_processor.py  # Data processing utilities
 │   ├── join_datasets.py   # Dataset joining implementation
 │   ├── main.py           # Main entry point
 │   └── queries/          # SQL queries
-└── tests/                # Test files
+
 ```
 
 ## Quick Start
@@ -122,47 +152,6 @@ make docker-join-run
 ```
 
 
-
-## Step-by-Step Testing
-
-### 1. Data Generation
-Test the data generation process:
-```bash
-# Using Docker
-make docker-build
-docker run --rm -v $(PWD):/app/data n26-task:latest src/main.py
-
-# Using local Python
-make setup
-make generate
-```
-
-Expected output: Statistics about generated users, transactions, and categories.
-
-### 2. Data Processing
-Test the data processing functionality:
-```bash
-# Using Docker
-make docker-join-test
-
-# Using local Python
-make join-test
-```
-
-Expected output: Test results showing data validation and processing statistics.
-
-### 3. Dataset Joining
-Test the dataset joining implementation:
-```bash
-# Using Docker
-make docker-join-run
-
-# Using local Python
-python src/join_datasets.py
-```
-
-Expected output: CSV format data showing joined transactions with user and agreement information.
-
 ## File Descriptions
 
 - `main.py`: Entry point that generates test data
@@ -178,11 +167,6 @@ The program generates and processes these files:
 - `user_data.csv`: User information
 - `dim_dep_agreement.csv`: Agreement dimension data
 
-## Testing Strategy
-
-1. **Unit Tests**: Individual component testing
-2. **Integration Tests**: Testing data flow between components
-3. **End-to-End Tests**: Complete pipeline testing
 
 ## Makefile Commands
 
@@ -194,26 +178,7 @@ The program generates and processes these files:
 - `make generate`: Generate test data
 - `make clean`: Clean generated files
 
-## Error Handling
 
-The program includes comprehensive error handling for:
-- Missing data files
-- Invalid data formats
-- Processing errors
-
-## Performance Considerations
-
-- Uses efficient data structures for lookups
-- Processes data in memory for better performance
-- Implements sorting for consistent output
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
 
 ## License
 
