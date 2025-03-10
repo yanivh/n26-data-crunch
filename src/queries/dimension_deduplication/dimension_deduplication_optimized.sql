@@ -2,30 +2,43 @@
 -- Single-pass solution using efficient window functions
 -- No temporary tables or CTEs needed
 
-SELECT DISTINCT
-    FIRST_VALUE(sk_agrmnt_id) OVER w as sk_agrmnt_id,
+WITH change_points AS (
+    SELECT 
+        *,
+        -- Detect changes in any attribute
+        CASE WHEN 
+            LAG(client_id) OVER w != client_id OR
+            LAG(product_id) OVER w != product_id OR
+            LAG(interest_rate) OVER w != interest_rate OR
+            LAG(client_id) OVER w IS NULL
+        THEN 1 ELSE 0 END as is_change
+    FROM dim_dep_agreement
+    WINDOW w AS (PARTITION BY agrmnt_id ORDER BY actual_from_dt)
+),
+valid_periods AS (
+    SELECT 
+        sk_agrmnt_id,
+        agrmnt_id,
+        actual_from_dt,
+        COALESCE(
+            LEAD(actual_from_dt) OVER (PARTITION BY agrmnt_id ORDER BY actual_from_dt),
+            '9999-12-31'::VARCHAR
+        ) as actual_to_dt,
+        client_id,
+        product_id,
+        interest_rate
+    FROM change_points
+    WHERE is_change = 1
+)
+SELECT 
+    sk_agrmnt_id,
     agrmnt_id,
     actual_from_dt,
-    LEAD(actual_from_dt, 1, '9999-12-31') OVER w as actual_to_dt,
+    actual_to_dt,
     client_id,
     product_id,
     interest_rate
-FROM (
-    SELECT *,
-        -- Detect start of new group when attributes change
-        CASE WHEN 
-            LAG(client_id) OVER w IS NULL OR
-            LAG(product_id) OVER w IS NULL OR
-            LAG(interest_rate) OVER w IS NULL OR
-            client_id != LAG(client_id) OVER w OR
-            product_id != LAG(product_id) OVER w OR
-            interest_rate != LAG(interest_rate) OVER w
-        THEN 1 ELSE 0 END as is_new_group
-    FROM dim_dep_agreement
-    WINDOW w AS (PARTITION BY agrmnt_id ORDER BY actual_from_dt)
-) subq
-WHERE is_new_group = 1  -- Keep only the start of each unique period
-WINDOW w AS (PARTITION BY agrmnt_id ORDER BY actual_from_dt)
+FROM valid_periods
 ORDER BY agrmnt_id, actual_from_dt;
 
 /*
