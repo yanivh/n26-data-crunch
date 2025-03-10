@@ -2,30 +2,39 @@
 -- Single-pass solution using efficient window functions
 -- No temporary tables or CTEs needed
 
-SELECT DISTINCT
-    FIRST_VALUE(sk_agrmnt_id) OVER w as sk_agrmnt_id,
+WITH changes AS (
+    SELECT 
+        sk_agrmnt_id,
+        agrmnt_id,
+        CAST(actual_from_dt AS DATE) as actual_from_dt,
+        CAST(actual_to_dt AS DATE) as actual_to_dt,
+        client_id,
+        product_id,
+        interest_rate,
+        -- Detect changes by comparing with next record
+        LAG(product_id) OVER (PARTITION BY agrmnt_id ORDER BY CAST(actual_from_dt AS DATE)) as prev_product_id,
+        LAG(interest_rate) OVER (PARTITION BY agrmnt_id ORDER BY CAST(actual_from_dt AS DATE)) as prev_interest_rate,
+        -- Mark first record of each agreement
+        ROW_NUMBER() OVER (PARTITION BY agrmnt_id ORDER BY CAST(actual_from_dt AS DATE)) as rn
+    FROM dim_dep_agreement
+)
+SELECT 
+    sk_agrmnt_id,
     agrmnt_id,
     actual_from_dt,
-    LEAD(actual_from_dt, 1, '9999-12-31') OVER w as actual_to_dt,
+    actual_to_dt,
     client_id,
     product_id,
     interest_rate
-FROM (
-    SELECT *,
-        -- Detect start of new group when attributes change
-        CASE WHEN 
-            LAG(client_id) OVER w IS NULL OR
-            LAG(product_id) OVER w IS NULL OR
-            LAG(interest_rate) OVER w IS NULL OR
-            client_id != LAG(client_id) OVER w OR
-            product_id != LAG(product_id) OVER w OR
-            interest_rate != LAG(interest_rate) OVER w
-        THEN 1 ELSE 0 END as is_new_group
-    FROM dim_dep_agreement
-    WINDOW w AS (PARTITION BY agrmnt_id ORDER BY actual_from_dt)
-) subq
-WHERE is_new_group = 1  -- Keep only the start of each unique period
-WINDOW w AS (PARTITION BY agrmnt_id ORDER BY actual_from_dt)
+FROM changes
+WHERE 
+    -- Keep first record of each agreement
+    rn = 1
+    OR 
+    -- Keep records where either product or rate changed
+    product_id != prev_product_id 
+    OR 
+    interest_rate != prev_interest_rate
 ORDER BY agrmnt_id, actual_from_dt;
 
 /*
