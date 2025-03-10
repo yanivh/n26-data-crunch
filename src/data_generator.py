@@ -1,13 +1,13 @@
 # Copyright 2020 N26 GmbH
 
 import csv
-import datetime
 import os
 import random
 import uuid
 from typing import Dict, List, Any
 from utils import write_data
 from collections import defaultdict
+from datetime import datetime, timedelta
 
 
 def generate_transactions(users: Dict[str, Any]) -> Dict[str, Any]:
@@ -53,11 +53,14 @@ def generate_transactions(users: Dict[str, Any]) -> Dict[str, Any]:
             else random.randint(0, 10)
         )
 
+        # Fix the datetime usage here
+        current_date = datetime.now().date() - timedelta(
+            days=random.randint(int(i / len(active_transaction_users)), 100)
+        )
+
         transaction = [
             uuid.uuid4(),
-            (datetime.date.today() - datetime.timedelta(
-                days=random.randint(int(i / len(active_transaction_users)), 100)
-            )).strftime('%Y-%m-%d'),
+            current_date.strftime('%Y-%m-%d'),
             user_id,
             'True' if random.random() < 0.01 else 'False',
             '%.2f' % (random.random() * 50),
@@ -114,4 +117,61 @@ def write_data(out: str, header: List[str], data: List[List[Any]]) -> bool:
     except Exception as err:
         print('Failed to write %s' % out)
         return False
-    return True 
+    return True
+
+
+def generate_agreements(users):
+    """Generate agreement data for users."""
+    header = [
+        'sk_agrmnt_id',
+        'agrmnt_id',
+        'actual_from_dt',
+        'actual_to_dt',
+        'client_id',
+        'product_id',
+        'interest_rate'
+    ]
+    
+    data = []
+    sk_agrmnt_id = 1
+    
+    for user in users['data']:
+        user_id = user[0]  # Assuming user_id is first column
+        
+        # Generate 1-3 agreements per user
+        num_agreements = random.randint(1, 3)
+        
+        # Start date for first agreement
+        current_date = datetime(2015, 1, 1) + timedelta(days=random.randint(0, 365))
+        
+        for _ in range(num_agreements):
+            # Generate agreement duration (30-365 days)
+            duration = timedelta(days=random.randint(30, 365))
+            
+            # End date is start date + duration
+            end_date = current_date + duration
+            
+            # Generate random product_id (300-600)
+            product_id = random.randint(300, 600)
+            
+            # Generate random interest rate (1.0-10.0)
+            interest_rate = round(random.uniform(1.0, 10.0), 2)
+            
+            data.append([
+                sk_agrmnt_id,
+                f"AGR{sk_agrmnt_id:06d}",
+                current_date.strftime('%Y-%m-%d'),
+                end_date.strftime('%Y-%m-%d'),
+                user_id,
+                product_id,
+                interest_rate
+            ])
+            
+            sk_agrmnt_id += 1
+            # Next agreement starts when current one ends
+            current_date = end_date
+    
+    return {
+        'header': header,
+        'data': data
+    } 

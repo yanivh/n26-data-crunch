@@ -44,10 +44,9 @@ def find_matching_agreement(
 
 def process_transactions(
     trans_file: str,
-    users: Dict[str, bool],
-    agreements: Dict[str, List[Tuple[datetime, datetime, int, float]]]
+    users: Dict[str, bool]
 ) -> List[dict]:
-    """Process transactions and join with user and agreement data."""
+    """Process transactions and join with user data."""
     results = []
     
     with open(trans_file, 'r') as f:
@@ -59,10 +58,6 @@ def process_transactions(
             # Get user status
             is_active = users.get(user_id, False)
             
-            # Find matching agreement
-            user_agreements = agreements.get(user_id, [])
-            product_id, interest_rate = find_matching_agreement(user_agreements, transaction_date)
-            
             results.append({
                 'transaction_id': row['transaction_id'],
                 'transaction_date': row['date'],
@@ -70,9 +65,7 @@ def process_transactions(
                 'is_blocked': row['is_blocked'].lower() == 'true',
                 'transaction_amount': int(row['transaction_amount']),
                 'transaction_category_id': int(row['transaction_category_id']),
-                'is_active': is_active,
-                'product_id': product_id,
-                'interest_rate': interest_rate
+                'is_active': is_active
             })
     
     return sorted(results, key=lambda x: (x['transaction_date'], x['transaction_id']))
@@ -90,17 +83,12 @@ def print_results(results: List[dict]) -> None:
 def main():
     """Main function to process and join datasets."""
     try:
-        # Look in the mounted directory
-        users = load_users('/app/data/user_data.csv')
-        agreements = load_agreements('/app/data/dim_dep_agreement.csv')
-        results = process_transactions('/app/data/transaction_data.csv', users, agreements)
+        users = load_users('data/users.csv')
+        results = process_transactions('data/transactions.csv', users)
         print_results(results)
     except FileNotFoundError as e:
         print(f"Error: {e}")
         print("Please ensure data files are generated using 'make generate' first")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

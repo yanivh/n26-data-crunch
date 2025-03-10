@@ -5,25 +5,34 @@ from join_datasets import process_transactions, load_users, load_agreements
 import main  # Import main instead of data_generator
 
 def run_tests():
-    """Run tests with generated data."""
-    print("Generating test data...")
-    # Use main.py's functionality to generate data
-    main.main()  # This will create all necessary files
+    """Run the join datasets tests."""
+    try:
+        # Define file paths
+        users_path = 'data/users.csv'
+        transactions_path = 'data/transactions.csv'
+        agreements_path = 'data/dim_dep_agreement.csv'  # Add this path
 
-    # Use absolute paths in Docker container
-    trans_path = '/app/data/transaction_data.csv'
-    users_path = '/app/data/user_data.csv'
-    agreements_path = '/app/data/dim_dep_agreement.csv'
-    
-    print("Loading data...")
-    users_dict = load_users(users_path)
-    agreements_dict = load_agreements(agreements_path)
-    results = process_transactions(trans_path, users_dict, agreements_dict)
-    
-    print("Verifying results...")
+        # Load test data
+        users_dict = load_users(users_path)
+        agreements_dict = load_agreements(agreements_path)  # Use the path
+        
+        # Process transactions
+        results = process_transactions(transactions_path, users_dict, agreements_dict)
+        
+        # Validate results
+        validate_results(results)
+        
+        print("All tests passed successfully!")
+        return True
+        
+    except Exception as e:
+        print(f"Test failed: {e}")
+        return False
+
+def validate_results(results):
     # Read original transactions to compare
     transactions = []
-    with open(trans_path, 'r') as f:
+    with open('data/transactions.csv', 'r') as f:
         reader = csv.DictReader(f)
         transactions = list(reader)
     
@@ -44,8 +53,6 @@ def run_tests():
     print(f"Transactions with agreements: {len([r for r in results if r['product_id'] is not None])}")
     print(f"Active users: {len([r for r in results if r['is_active']])}")
     print(f"Blocked transactions: {len([r for r in results if r['is_blocked']])}")
-    
-    print("\nAll tests passed!")
 
 if __name__ == "__main__":
     print("Starting join datasets test...")
